@@ -16,11 +16,17 @@ Runs:
     - Comparative visualization between 1.2 and 1.3.
 """
 
+import sys
 import time
 from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.signal import convolve2d
+
+# Ensure repository root is on sys.path
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
 
 from filters import (
     convolve2d_loop,
@@ -33,7 +39,6 @@ from filters import (
 )
 from utils.utils import load_image, save_image
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
 OUTPUT_FILTERS_DIR = ROOT_DIR / "outputs" / "filters"
 OUTPUT_CONVOLVE_DIR = OUTPUT_FILTERS_DIR / "convolve"
 OUTPUT_DIFF_DIR = OUTPUT_FILTERS_DIR / "diff"
