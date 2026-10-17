@@ -8,4 +8,5 @@ dependencies = [
     "opencv-python>=5.0.0.93",
     "scipy>=1.18.1",
     "scipy-stubs~=1.18.1",
+    "tabulate>=0.10.0",
 ]
