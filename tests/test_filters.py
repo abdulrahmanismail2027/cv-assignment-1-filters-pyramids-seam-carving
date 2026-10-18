@@ -19,6 +19,8 @@ from filters import (
     build_dog_filters,
     compute_finite_differences,
     compute_dog_derivatives,
+    build_hybrid_image,
+    log_magnitude_spectrum,
 )
 
 
@@ -124,11 +126,23 @@ def test_finite_differences():
     assert np.allclose(mag[2:-2, 2:-2], 2.0)
 
 
+def test_hybrid_image_components_and_spectrum():
+    """A constant image has no high-frequency component and a finite spectrum."""
+    image = np.full((32, 32, 3), 0.4, dtype=np.float32)
+    low_pass, high_pass, hybrid = build_hybrid_image(image, image, 2.0, 2.0)
+
+    assert np.allclose(low_pass, image, atol=1e-7)
+    assert np.allclose(high_pass, 0.0, atol=1e-7)
+    assert np.allclose(hybrid, image, atol=1e-7)
+    assert np.isfinite(log_magnitude_spectrum(hybrid)).all()
+
+
 def run_all_tests():
     test_convolution_sanity_random_filters()
     test_gaussian_and_box_filters_are_separable()
     test_color_image_support()
     test_finite_differences()
+    test_hybrid_image_components_and_spectrum()
     print("All unit tests for filters passed successfully!")
 
 

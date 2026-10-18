@@ -17,6 +17,7 @@ from .gauss import (
     build_dog_filters,
     compute_dog_derivatives,
 )
+from .hybrid import gaussian_blur, build_hybrid_image, log_magnitude_spectrum
 
 __all__ = [
     "PaddingMode",
@@ -30,4 +31,7 @@ __all__ = [
     "make_gaussian_kernel_1d",
     "build_dog_filters",
     "compute_dog_derivatives",
+    "gaussian_blur",
+    "build_hybrid_image",
+    "log_magnitude_spectrum",
 ]
