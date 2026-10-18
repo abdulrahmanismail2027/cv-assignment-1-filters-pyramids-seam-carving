@@ -26,6 +26,7 @@ from filters import (
     gaussian_pyramid,
     laplacian_pyramid,
     reconstruct_laplacian,
+    multiresolution_blend,
 )
 
 
@@ -158,6 +159,19 @@ def test_pyramids_reconstruct_odd_sized_color_image():
     assert np.allclose(rebuilt, image, atol=1e-12)
 
 
+def test_multiresolution_blend_constant_masks_select_each_input():
+    """A constant mask should select one image at every pyramid level."""
+    generator = np.random.default_rng(11)
+    image1 = generator.random((35, 42, 3))
+    image2 = generator.random((35, 42, 3))
+
+    first_only, *_ = multiresolution_blend(image1, image2, np.ones((35, 42)), levels=4)
+    second_only, *_ = multiresolution_blend(image1, image2, np.zeros((35, 42)), levels=4)
+
+    assert np.allclose(first_only, image1, atol=1e-12)
+    assert np.allclose(second_only, image2, atol=1e-12)
+
+
 def run_all_tests():
     test_convolution_sanity_random_filters()
     test_gaussian_and_box_filters_are_separable()
@@ -165,6 +179,7 @@ def run_all_tests():
     test_finite_differences()
     test_hybrid_image_components_and_spectrum()
     test_pyramids_reconstruct_odd_sized_color_image()
+    test_multiresolution_blend_constant_masks_select_each_input()
     print("All unit tests for filters passed successfully!")
 
 
