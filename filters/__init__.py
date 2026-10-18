@@ -18,6 +18,7 @@ from .gauss import (
     compute_dog_derivatives,
 )
 from .hybrid import gaussian_blur, build_hybrid_image, log_magnitude_spectrum
+from .pyramid import reduce, expand, gaussian_pyramid, laplacian_pyramid, reconstruct_laplacian
 
 __all__ = [
     "PaddingMode",
@@ -34,4 +35,9 @@ __all__ = [
     "gaussian_blur",
     "build_hybrid_image",
     "log_magnitude_spectrum",
+    "reduce",
+    "expand",
+    "gaussian_pyramid",
+    "laplacian_pyramid",
+    "reconstruct_laplacian",
 ]

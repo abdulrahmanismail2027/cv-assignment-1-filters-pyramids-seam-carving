@@ -21,6 +21,11 @@ from filters import (
     compute_dog_derivatives,
     build_hybrid_image,
     log_magnitude_spectrum,
+    reduce,
+    expand,
+    gaussian_pyramid,
+    laplacian_pyramid,
+    reconstruct_laplacian,
 )
 
 
@@ -137,12 +142,29 @@ def test_hybrid_image_components_and_spectrum():
     assert np.isfinite(log_magnitude_spectrum(hybrid)).all()
 
 
+def test_pyramids_reconstruct_odd_sized_color_image():
+    """Pyramid reduction rounds up, and reconstruction crops expanded odd levels."""
+    image = np.random.default_rng(7).random((35, 42, 3))
+    first_reduced = reduce(image)
+    assert first_reduced.shape == (18, 21, 3)
+    assert expand(first_reduced).shape == (36, 42, 3)
+
+    gaussian = gaussian_pyramid(image, levels=5)
+    laplacian = laplacian_pyramid(image, levels=5)
+    rebuilt = reconstruct_laplacian(laplacian)
+
+    assert len(gaussian) == len(laplacian) == 5
+    assert [level.shape for level in gaussian] == [level.shape for level in laplacian]
+    assert np.allclose(rebuilt, image, atol=1e-12)
+
+
 def run_all_tests():
     test_convolution_sanity_random_filters()
     test_gaussian_and_box_filters_are_separable()
     test_color_image_support()
     test_finite_differences()
     test_hybrid_image_components_and_spectrum()
+    test_pyramids_reconstruct_odd_sized_color_image()
     print("All unit tests for filters passed successfully!")
 
 
