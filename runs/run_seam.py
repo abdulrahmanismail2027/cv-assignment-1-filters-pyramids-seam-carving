@@ -30,6 +30,7 @@ from filters import (
     rescale_midgray,
     build_dog_filters,
     convolve2d_separable,
+    compute_dog_derivatives,
 )
 from utils.utils import load_image, save_image
 
@@ -47,15 +48,11 @@ def energy_finite(image: np.ndarray) -> np.ndarray:
 
 
 def energy_dog(image: np.ndarray, ksize: int = 13, sigma: float = 2.0) -> np.ndarray:
-    if image.ndim == 3:
-        gray = np.mean(image, axis=2)
-    else:
-        gray = image
-    DoG_x, DoG_y = build_dog_filters(ksize=ksize, sigma=sigma, padding_mode="constant")
-    Ix = convolve2d_separable(gray, DoG_x, padding_mode="constant")
-    Iy = convolve2d_separable(gray, DoG_y, padding_mode="constant")
-    return np.sqrt(Ix**2 + Iy**2).astype(np.float64)
-
+    gray = np.mean(image, axis=2) if image.ndim == 3 else image
+    *_, magnitude = compute_dog_derivatives(
+        gray.astype(np.float64), ksize=ksize, sigma=sigma, padding_mode="constant"
+    )
+    return magnitude
 
 ENERGY_FUNCTIONS = {
     "finite": energy_finite,
