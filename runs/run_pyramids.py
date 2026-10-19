@@ -47,6 +47,25 @@ def _save_pyramid_figure(
     plt.close(figure)
 
 
+def _save_pyramid_layout(
+    pyramid: list[np.ndarray], filename: str, contrast_boost: bool = False
+) -> None:
+    gap = 8
+    canvas_shape = (
+        sum(level.shape[0] for level in pyramid) + gap * (len(pyramid) - 1),
+        pyramid[0].shape[1],
+    ) + pyramid[0].shape[2:]
+    canvas = np.ones(canvas_shape, dtype=np.float64)
+    top = 0
+    for level in reversed(pyramid):
+        height, width = level.shape[:2]
+        left = (canvas.shape[1] - width) // 2
+        display_level = _boost_laplacian(level) if contrast_boost else np.clip(level, 0.0, 1.0)
+        canvas[top : top + height, left : left + width, ...] = display_level
+        top += height + gap
+    save_image(OUTPUT_DIR / filename, canvas)
+
+
 def _save_reconstruction_figure(
     original: np.ndarray,
     reconstructed: np.ndarray,
@@ -107,6 +126,10 @@ def main() -> None:
     rmse = float(np.sqrt(np.mean(absolute_error**2)))
 
     _save_pyramid_figure(gaussian, laplacian)
+    _save_pyramid_layout(gaussian, "gaussian_pyramid_layout.png")
+    _save_pyramid_layout(
+        laplacian, "laplacian_pyramid_layout.png", contrast_boost=True
+    )
     _save_reconstruction_figure(original, reconstructed, absolute_error)
     save_image(OUTPUT_DIR / "reconstructed.png", reconstructed)
     ratio = _write_report(gaussian, original, max_error, rmse)

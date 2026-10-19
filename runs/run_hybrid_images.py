@@ -16,7 +16,7 @@ from utils.align_images import align_images
 from utils.utils import load_image, save_image
 
 IMAGE_DIR = ROOT_DIR / "images" / "frequencies"
-OUTPUT_DIR = ROOT_DIR / "outputs" / "frequencies"
+OUTPUT_DIR = ROOT_DIR / "outputs" / "frequencies" / "hybrid_images"
 
 
 @dataclass(frozen=True)
