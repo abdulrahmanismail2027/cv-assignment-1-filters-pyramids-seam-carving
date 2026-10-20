@@ -101,9 +101,8 @@ def _remove_seam(image: np.ndarray, seam: list[tuple[int, int]]) -> np.ndarray:
 
 def _resize(image: np.ndarray, target_width: int) -> np.ndarray:
     H, W = image.shape[:2]
-    target_height = int(H * (target_width / W))
     pil = Image.fromarray((np.clip(image, 0, 1) * 255).astype(np.uint8))
-    pil = pil.resize((target_width, target_height), Image.Resampling.LANCZOS)
+    pil = pil.resize((target_width, H), Image.Resampling.LANCZOS)
     return np.asarray(pil).astype(np.float32) / 255.0
 
 

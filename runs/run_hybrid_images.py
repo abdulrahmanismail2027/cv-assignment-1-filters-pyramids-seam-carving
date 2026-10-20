@@ -43,6 +43,26 @@ PAIRS = (
         note="The aligned eyes support a recognizable face at both viewing scales.",
     ),
     HybridPair(
+        name="marilyn_einstein",
+        low_image="marilyn.jpg",
+        high_image="einstein.jpg",
+        sigma_low=10.0,
+        sigma_high=4.0,
+        low_points=((260, 380), (460, 420)),
+        high_points=((370, 401), (529, 402)),
+        note="Classic Oliva et al. hybrid: Marilyn low frequencies dominate at distance, Einstein detail dominates up close.",
+    ),
+    HybridPair(
+        name="marilyn_watch",
+        low_image="marilyn.jpg",
+        high_image="pocket_watch.jpg",
+        sigma_low=12.0,
+        sigma_high=6.0,
+        low_points=((260, 380), (460, 420)),
+        high_points=((250, 270), (550, 270)),
+        note="Intentional failure: clock dial numerals and mechanical hands do not map onto human facial geometry, producing an unnatural double exposure.",
+    ),
+    HybridPair(
         name="apple_orange",
         low_image="apple.jpg",
         high_image="orange.jpg",
@@ -60,11 +80,7 @@ PAIRS = (
         sigma_high=8.0,
         low_points=((250, 380), (610, 380)),
         high_points=((185, 230), (450, 230)),
-        note=(
-            "This is the intentionally weak pair: the eye's contours do not match "
-            "the hand's palm and fingers, so its high-frequency detail reads as "
-            "texture on a hand rather than a second coherent object."
-        ),
+        note="Practice pair from starter pack.",
     ),
 )
 
