@@ -23,7 +23,7 @@ if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
 OUTPUT_ROOT = ROOT_DIR / "outputs"
-REDUCED_WIDTH = 0.70   # keep 70% → remove ~30%
+REDUCED_WIDTH = 0.70   # keep 70% -> remove ~30%
 
 from filters import (
     compute_finite_differences,
@@ -64,45 +64,39 @@ ENERGY_FUNCTIONS = {
 # Core helpers
 # ----------------------------------------------------------------------
 def _get_seam_pixels(energy: np.ndarray) -> list[tuple[int, int]]:
-    """Vertical seam (one pixel per row)."""
+    """Minimum-cost vertical seam (row-vectorised DP). Returns [(r, c), ...]."""
     H, W = energy.shape
     M = energy.astype(np.float64).copy()
     backtrack = np.zeros((H, W), dtype=np.int32)
+    cols = np.arange(W)
+    offsets = np.array([0, -1, 1])
 
     for r in range(1, H):
-        for c in range(W):
-            candidates = [(M[r-1, c], c)]
-            if c > 0:
-                candidates.append((M[r-1, c-1], c-1))
-            if c < W-1:
-                candidates.append((M[r-1, c+1], c+1))
-            min_val, prev_c = min(candidates, key=lambda x: x[0])
-            M[r, c] += min_val
-            backtrack[r, c] = prev_c
+        prev = M[r - 1]
+        left = np.concatenate(([np.inf], prev[:-1]))
+        right = np.concatenate((prev[1:], [np.inf]))
+        stack = np.stack([prev, left, right])
+        idx = np.argmin(stack, axis=0)
+        M[r] += stack[idx, cols]
+        backtrack[r] = cols + offsets[idx]
 
     c = int(np.argmin(M[-1]))
     seam = []
-    for r in range(H-1, -1, -1):
+    for r in range(H - 1, -1, -1):
         seam.append((r, c))
         if r > 0:
-            c = backtrack[r, c]
+            c = int(backtrack[r, c])
     seam.reverse()
     return seam
 
 
 def _remove_seam(image: np.ndarray, seam: list[tuple[int, int]]) -> np.ndarray:
     H, W = image.shape[:2]
-    if image.ndim == 2:
-        out = np.zeros((H, W-1), dtype=image.dtype)
-        for r, c in seam:
-            out[r, :c] = image[r, :c]
-            out[r, c:] = image[r, c+1:]
-    else:
-        out = np.zeros((H, W-1, image.shape[2]), dtype=image.dtype)
-        for r, c in seam:
-            out[r, :c, :] = image[r, :c, :]
-            out[r, c:, :] = image[r, c+1:, :]
-    return out
+    keep = np.ones((H, W), dtype=bool)
+    rows = np.fromiter((r for r, _ in seam), dtype=np.int64, count=len(seam))
+    cols = np.fromiter((c for _, c in seam), dtype=np.int64, count=len(seam))
+    keep[rows, cols] = False
+    return image[keep].reshape((H, W - 1) + image.shape[2:])
 
 
 def _resize(image: np.ndarray, target_width: int) -> np.ndarray:
@@ -198,7 +192,7 @@ def run_one(
     num_seams = original_width - target_width
 
     print(f"  [{direction:9s} | {energy_name:6s}] {image_name}: "
-          f"{original_width} → {target_width} ({num_seams} seams)")
+          f"{original_width} -> {target_width} ({num_seams} seams)")
 
     # energy map (of the working orientation)
     energy = energy_fn(working)
@@ -246,7 +240,7 @@ def run_one(
         f"{direction}, {energy_name}"
     )
 
-    print(f"    → outputs/{direction}/{energy_name}/  [{elapsed:.2f} s]")
+    print(f"    -> outputs/{direction}/{energy_name}/  [{elapsed:.2f} s]")
 
 
 def main():

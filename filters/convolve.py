@@ -162,7 +162,6 @@ def convolve2d_separable(
     if kh == 1 or kw == 1:
         return convolve2d_vectorized(image, k, padding_mode=padding_mode)
 
-    # Compute SVD of the kernel to check rank 1
     U, S, Vt = np.linalg.svd(k, full_matrices=False)
 
     is_separable = False
@@ -174,14 +173,11 @@ def convolve2d_separable(
         is_separable = True
 
     if is_separable:
-        # Outer product reconstruction: col @ row == k
-        col = U[:, 0:1] * np.sqrt(S[0])  # shape (kh, 1)
-        row = Vt[0:1, :] * np.sqrt(S[0])  # shape (1, kw)
+        col = U[:, 0:1] * np.sqrt(S[0])
+        row = Vt[0:1, :] * np.sqrt(S[0])
 
-        # Convolve with column, then with row
         col_filtered = convolve2d_vectorized(image, col, padding_mode=padding_mode)
         output = convolve2d_vectorized(col_filtered, row, padding_mode=padding_mode)
         return output
     else:
-        # Fallback to 2D vectorized convolution
         return convolve2d_vectorized(image, k, padding_mode=padding_mode)
