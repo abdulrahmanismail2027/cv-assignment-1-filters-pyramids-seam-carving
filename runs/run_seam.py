@@ -193,10 +193,24 @@ def run_one(
     print(f"  [{direction:9s} | {energy_name:6s}] {image_name}: "
           f"{original_width} -> {target_width} ({num_seams} seams)")
 
-    # energy map (of the working orientation)
+    # energy map: normalized to [0, 1] with black background (0 energy = black, max = white)
     energy = energy_fn(working)
-    energy_vis = rescale_midgray(energy)
+    e_min = float(energy.min())
+    e_max = float(energy.max())
+    if e_max > e_min:
+        energy_norm = (energy - e_min) / (e_max - e_min)
+    else:
+        energy_norm = np.zeros_like(energy)
+
+    if direction == "horizontal":
+        energy_vis = _transpose_image(energy_norm)
+    else:
+        energy_vis = energy_norm
+
     save_image(paths["energy"] / f"{image_name}_energy.png", energy_vis)
+    sanitized_name = image_name.replace(" (1)", "_1").replace(" ", "_")
+    if sanitized_name != image_name:
+        save_image(paths["energy"] / f"{sanitized_name}_energy.png", energy_vis)
 
     # remove seams
     all_seams = []
@@ -238,6 +252,15 @@ def run_one(
         paths["compare"] / f"{image_name}_compare.png",
         f"{direction}, {energy_name}"
     )
+
+    if sanitized_name != image_name:
+        save_image(paths["seams"]  / f"{sanitized_name}_seams_red.png", vis)
+        save_image(paths["carved"] / f"{sanitized_name}_carved.png", current)
+        _save_labeled_comparison(
+            orig_for_compare, resized, cropped, current,
+            paths["compare"] / f"{sanitized_name}_compare.png",
+            f"{direction}, {energy_name}"
+        )
 
     print(f"    -> outputs/{direction}/{energy_name}/  [{elapsed:.2f} s]")
 
